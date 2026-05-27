@@ -1,7 +1,15 @@
-{lib, ...}: let
+{
+    lib,
+    inputs,
+    ...
+}: let
     inherit (lib) mkEnableOption mkOption mkIf types concatMapStrings;
 in {
-    flake.homeManagerModules.default = {config, ...}: let
+    flake.homeManagerModules.default = {
+        config,
+        pkgs,
+        ...
+    }: let
         cfg = config.programs.project;
 
         generatedTemplate = ''
@@ -22,6 +30,11 @@ in {
     in {
         options.programs.project = {
             enable = mkEnableOption "project tmux session manager";
+            package = mkOption {
+                type = types.package;
+                default = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.default;
+                description = "The project package to install.";
+            };
             editor = mkOption {
                 type = types.str;
                 default = "nvim";
@@ -44,6 +57,7 @@ in {
             };
         };
         config = mkIf cfg.enable {
+            home.packages = [cfg.package];
             xdg.configFile."project/template.yaml".text =
                 if cfg.template != null
                 then cfg.template
