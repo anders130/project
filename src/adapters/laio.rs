@@ -7,8 +7,31 @@ fn yaml_quote(s: &str) -> String {
     format!("'{}'", s.replace('\'', "''"))
 }
 
+fn builtin_template(session_name: &str, project_dir: &Path) -> String {
+    format!(
+        "\
+name: {name}
+path: {dir}
+
+windows:
+  - name: code
+    panes:
+      - commands:
+          - command: nvim
+            args:
+              - .
+  - name: shell
+    panes:
+      - commands: []
+",
+        name = yaml_quote(session_name),
+        dir = yaml_quote(&project_dir.display().to_string()),
+    )
+}
+
 pub struct LaioAdapter {
     pub config_dir: PathBuf,
+    pub template_path: PathBuf,
 }
 
 impl SessionLauncher for LaioAdapter {
@@ -24,25 +47,15 @@ impl SessionLauncher for LaioAdapter {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
-        let content = format!(
-            "\
-name: {name}
-path: {dir}
 
-windows:
-  - name: code
-    panes:
-      - commands:
-          - command: nvim
-            args:
-              - .
-  - name: shell
-    panes:
-      - commands: []
-",
-            name = yaml_quote(session_name),
-            dir = yaml_quote(&project_dir.display().to_string()),
-        );
+        let content = if self.template_path.exists() {
+            std::fs::read_to_string(&self.template_path)?
+                .replace("{name}", &yaml_quote(session_name))
+                .replace("{path}", &yaml_quote(&project_dir.display().to_string()))
+        } else {
+            builtin_template(session_name, project_dir)
+        };
+
         std::fs::write(&path, content)?;
         Ok(())
     }

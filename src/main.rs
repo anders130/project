@@ -18,6 +18,7 @@ struct Config {
     history_path: PathBuf,
     laio_config_dir: PathBuf,
     projects_dir: PathBuf,
+    template_path: PathBuf,
 }
 
 impl Config {
@@ -35,6 +36,7 @@ impl Config {
         Ok(Config {
             history_path: data_home.join("project/history"),
             laio_config_dir: config_home.join("laio"),
+            template_path: config_home.join("project/template.yaml"),
             projects_dir,
         })
     }
@@ -73,6 +75,7 @@ fn run() -> Result<()> {
     };
     let configs = adapters::laio::LaioAdapter {
         config_dir: cfg.laio_config_dir,
+        template_path: cfg.template_path,
     };
     let scanner = adapters::filesystem::FilesystemRepoScanner {
         projects_dir: cfg.projects_dir,
