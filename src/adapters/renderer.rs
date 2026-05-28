@@ -59,40 +59,102 @@ pub fn render_preview(session_name: &str, path_str: &str, tmux: &dyn SessionMana
         .status();
 }
 
+struct Lang {
+    name: &'static str,
+    icon: &'static str,
+    color: &'static str,
+    indicators: &'static [&'static str],
+    exclude_if: &'static [&'static str],
+}
+
+impl Lang {
+    fn detected(&self, path: &Path) -> bool {
+        self.exclude_if.iter().all(|f| !path.join(f).exists())
+            && self.indicators.iter().any(|f| path.join(f).exists())
+    }
+
+    fn display(&self) -> String {
+        format!("{}{} {}{RST}", self.color, self.icon, self.name)
+    }
+}
+
+const LANGS: &[Lang] = &[
+    Lang {
+        name: "Nix",
+        icon: "\u{F313}",
+        color: SKY,
+        indicators: &["flake.nix", "default.nix"],
+        exclude_if: &[],
+    },
+    Lang {
+        name: "Rust",
+        icon: "\u{E7A8}",
+        color: PCH,
+        indicators: &["Cargo.toml"],
+        exclude_if: &[],
+    },
+    Lang {
+        name: "TypeScript",
+        icon: "\u{E628}",
+        color: BLU,
+        indicators: &["tsconfig.json"],
+        exclude_if: &[],
+    },
+    Lang {
+        name: "Node",
+        icon: "\u{E718}",
+        color: GRN,
+        indicators: &["package.json"],
+        exclude_if: &["tsconfig.json"],
+    },
+    Lang {
+        name: "Python",
+        icon: "\u{E606}",
+        color: YEL,
+        indicators: &["pyproject.toml", "requirements.txt", "setup.py"],
+        exclude_if: &[],
+    },
+    Lang {
+        name: "Go",
+        icon: "\u{E724}",
+        color: SKY,
+        indicators: &["go.mod"],
+        exclude_if: &[],
+    },
+    Lang {
+        name: "Java",
+        icon: "\u{E738}",
+        color: PCH,
+        indicators: &["pom.xml", "build.gradle"],
+        exclude_if: &[],
+    },
+    Lang {
+        name: "Ruby",
+        icon: "\u{E23E}",
+        color: PCH,
+        indicators: &["Gemfile"],
+        exclude_if: &[],
+    },
+    Lang {
+        name: "PHP",
+        icon: "\u{E608}",
+        color: MVE,
+        indicators: &["composer.json"],
+        exclude_if: &[],
+    },
+    Lang {
+        name: "Docker",
+        icon: "\u{E7B0}",
+        color: BLU,
+        indicators: &["Dockerfile", "docker-compose.yml"],
+        exclude_if: &[],
+    },
+];
+
 fn detect_techs(path: &Path) -> Vec<String> {
-    let mut techs = Vec::new();
-
-    let check = |file: &str| path.join(file).exists();
-
-    if check("flake.nix") || check("default.nix") {
-        techs.push(format!("{SKY}\u{F1125} Nix{RST}"));
-    }
-    if check("Cargo.toml") {
-        techs.push(format!("{PCH}🦀 Rust{RST}"));
-    }
-    if check("tsconfig.json") {
-        techs.push(format!("{BLU}\u{F02E6} TypeScript{RST}"));
-    } else if check("package.json") {
-        techs.push(format!("{GRN}\u{E718} Node{RST}"));
-    }
-    if check("pyproject.toml") || check("requirements.txt") || check("setup.py") {
-        techs.push(format!("{YEL}🐍 Python{RST}"));
-    }
-    if check("go.mod") {
-        techs.push(format!("{SKY}🐹 Go{RST}"));
-    }
-    if check("pom.xml") || check("build.gradle") {
-        techs.push(format!("{PCH}☕ Java{RST}"));
-    }
-    if check("Gemfile") {
-        techs.push(format!("{PCH}💎 Ruby{RST}"));
-    }
-    if check("composer.json") {
-        techs.push(format!("{MVE}🐘 PHP{RST}"));
-    }
-    if check("Dockerfile") || check("docker-compose.yml") {
-        techs.push(format!("{BLU}🐳 Docker{RST}"));
-    }
-
-    techs
+    LANGS
+        .iter()
+        .filter(|l| l.detected(path))
+        .map(|l| l.display())
+        .collect()
 }
