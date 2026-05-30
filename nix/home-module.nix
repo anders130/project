@@ -3,7 +3,7 @@
     inputs,
     ...
 }: let
-    inherit (lib) mkEnableOption mkOption mkIf types concatMapStrings;
+    inherit (lib) mkEnableOption mkOption mkIf types concatMapStrings concatStringsSep;
 in {
     flake.homeManagerModules.default = {
         config,
@@ -55,9 +55,25 @@ in {
                     Overrides editor and editorArgs when set.
                 '';
             };
+            palette = mkOption {
+                type = types.nullOr (types.listOf types.str);
+                default = null;
+                description = ''
+                    16 hex colors (color0..color15) for syntax highlighting in glow previews.
+                    Overrides automatic terminal palette detection.
+                    For Stylix users:
+                      palette = with config.lib.stylix.colors.withHashtag; [
+                        base00 base08 base0B base0A base0D base0E base0C base05
+                        base03 base09 base01 base02 base0F base06 base07 base04
+                      ];
+                '';
+            };
         };
         config = mkIf cfg.enable {
             home.packages = [cfg.package];
+            home.sessionVariables = mkIf (cfg.palette != null) {
+                PROJECT_PALETTE = concatStringsSep "," cfg.palette;
+            };
             xdg.configFile."project/template.yaml".text =
                 if cfg.template != null
                 then cfg.template
