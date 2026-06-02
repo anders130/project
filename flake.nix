@@ -13,10 +13,6 @@
             inputs = {
                 nixpkgs.follows = "nixpkgs";
                 flake-parts.follows = "flake-parts";
-                rustnix.inputs = {
-                    base-nixpkgs.inputs.flake-parts.follows = "flake-parts";
-                    flake-parts.follows = "flake-parts";
-                };
             };
         };
     };
