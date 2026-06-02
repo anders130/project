@@ -47,9 +47,11 @@ pub fn handle(
         })
         .flatten();
 
-    let tech_items = (!path.is_empty())
-        .then(|| tech_stack::from_langs(&lang_detector::detect(Path::new(&path))))
-        .unwrap_or_default();
+    let tech_items = if !path.is_empty() {
+        tech_stack::from_langs(&lang_detector::detect(Path::new(&path)))
+    } else {
+        Default::default()
+    };
 
     preview::render(
         &path,

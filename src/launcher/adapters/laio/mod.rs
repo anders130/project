@@ -1,17 +1,13 @@
-mod config;
 mod editor;
 mod starter;
 
 use std::path::{Path, PathBuf};
-
-use config::SessionConfig;
 
 use crate::launcher::ports::launcher::Launcher;
 use crate::Result;
 
 pub struct LaioSessionStarter {
     pub config_dir: PathBuf,
-    pub template_path: PathBuf,
 }
 
 impl LaioSessionStarter {
@@ -27,17 +23,35 @@ impl LaioSessionStarter {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
+        let name = yaml_quote(session_name);
+        let dir = yaml_quote(&project_dir.display().to_string());
+        std::fs::write(
+            &path,
+            format!(
+                "\
+name: {name}
+path: {dir}
 
-        let cfg = if self.template_path.exists() {
-            let template = std::fs::read_to_string(&self.template_path)?;
-            SessionConfig::from_template(&template, session_name, project_dir)
-        } else {
-            SessionConfig::builtin(session_name, project_dir)
-        };
-
-        std::fs::write(&path, cfg.content)?;
+windows:
+  - name: code
+    panes:
+      - commands:
+          - command: nvim
+            args:
+              - .
+  - name: shell
+    focus: true
+    panes:
+      - commands: []
+"
+            ),
+        )?;
         Ok(())
     }
+}
+
+fn yaml_quote(s: &str) -> String {
+    format!("'{}'", s.replace('\'', "''"))
 }
 
 impl Launcher for LaioSessionStarter {}

@@ -63,7 +63,6 @@ fn run() -> Result<()> {
     let starter: Box<dyn Launcher> = match cfg.launcher_backend {
         LauncherBackend::Laio => Box::new(LaioSessionStarter {
             config_dir: cfg.laio_config_dir,
-            template_path: cfg.template_path,
         }),
     };
     let preview_cmd = std::env::current_exe()

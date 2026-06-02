@@ -24,7 +24,6 @@ pub struct Config {
     pub history_path: PathBuf,
     pub laio_config_dir: PathBuf,
     pub projects_dir: PathBuf,
-    pub template_path: PathBuf,
     pub markdown_backend: MarkdownBackend,
     pub launcher_backend: LauncherBackend,
     pub multiplexer_backend: MultiplexerBackend,
@@ -53,19 +52,9 @@ impl Config {
             _ => MarkdownBackend::Glow,
         };
 
-        let launcher_backend = match std::env::var("PROJECT_LAUNCHER")
-            .as_deref()
-            .unwrap_or("laio")
-        {
-            _ => LauncherBackend::Laio,
-        };
+        let launcher_backend = LauncherBackend::Laio;
 
-        let multiplexer_backend = match std::env::var("PROJECT_MULTIPLEXER")
-            .as_deref()
-            .unwrap_or("tmux")
-        {
-            _ => MultiplexerBackend::Tmux,
-        };
+        let multiplexer_backend = MultiplexerBackend::Tmux;
 
         let picker_backend = match std::env::var("PROJECT_PICKER").as_deref().unwrap_or("fzf") {
             "tv" => PickerBackend::Tv,
@@ -77,7 +66,6 @@ impl Config {
         Ok(Config {
             history_path: data_home.join("project/history"),
             laio_config_dir: config_home.join("laio"),
-            template_path: config_home.join("project/template.yaml"),
             projects_dir,
             markdown_backend,
             launcher_backend,
