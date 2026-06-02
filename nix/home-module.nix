@@ -24,6 +24,7 @@ in {
                         args:
                           ${concatMapStrings (a: "- ${a}\n") cfg.editorArgs}
               - name: shell
+                focus: true
                 panes:
                   - commands: []
         '';

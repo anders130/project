@@ -28,6 +28,7 @@ windows:
             args:
               - .
   - name: shell
+    focus: true
     panes:
       - commands: []
 ",

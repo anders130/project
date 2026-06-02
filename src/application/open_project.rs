@@ -19,7 +19,6 @@ pub fn execute(
         return navigate(navigator, &name);
     }
     starter.start(&name, &project.repo.path)?;
-    navigator.on_session_started(&name);
     navigate(navigator, &name)
 }
 

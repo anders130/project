@@ -29,15 +29,4 @@ impl SessionNavigator for TmuxAdapter {
         }
         Ok(())
     }
-
-    fn on_session_started(&self, name: &str) {
-        // Seed tmux last-window so prefix-L works after attach.
-        // TODO: remove once laio supports window-level focus natively.
-        let _ = Command::new("tmux")
-            .args(["select-window", "-t", &format!("{name}:shell")])
-            .status();
-        let _ = Command::new("tmux")
-            .args(["select-window", "-t", &format!("{name}:code")])
-            .status();
-    }
 }
