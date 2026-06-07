@@ -18,13 +18,12 @@
             };
         };
 
-        # Each arg accepts a { pkg; env; } record.
-        # Use backends.<group>.<name> for predefined choices, or supply your own.
         mkPackage = {
             multiplexer ? backends.multiplexer.tmux,
             launcher ? backends.launcher.laio,
             markdown ? backends.markdown.glow,
             picker ? backends.picker.tv,
+            palette ? null,
         }:
             pkgs.rustPlatform.buildRustPackage {
                 pname = "project";
@@ -35,15 +34,17 @@
                 postInstall = ''
                     wrapProgram $out/bin/project \
                       --prefix PATH : ${lib.makeBinPath [
-                          multiplexer.pkg
-                          launcher.pkg
-                          markdown.pkg
-                          picker.pkg
-                      ]} \
+                        multiplexer.pkg
+                        launcher.pkg
+                        markdown.pkg
+                        picker.pkg
+                    ]} \
                       --set PROJECT_MULTIPLEXER       ${multiplexer.env} \
                       --set PROJECT_LAUNCHER          ${launcher.env} \
                       --set PROJECT_MARKDOWN_RENDERER ${markdown.env} \
-                      --set PROJECT_PICKER            ${picker.env}
+                      --set PROJECT_PICKER            ${picker.env} \
+                      ${lib.optionalString (palette != null)
+                        "--set PROJECT_PALETTE ${lib.escapeShellArg (lib.concatStringsSep "," palette)}"}
                 '';
                 meta.description = "Open a git project in a tmux session";
                 passthru = {inherit backends mkPackage;};

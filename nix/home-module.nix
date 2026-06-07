@@ -3,7 +3,7 @@
     inputs,
     ...
 }: let
-    inherit (lib) mkEnableOption mkOption mkIf types concatStringsSep;
+    inherit (lib) mkEnableOption mkOption mkIf types;
 in {
     flake.homeManagerModules.default = {
         config,
@@ -34,10 +34,13 @@ in {
             };
         };
         config = mkIf cfg.enable {
-            home.packages = [cfg.package];
-            home.sessionVariables = mkIf (cfg.palette != null) {
-                PROJECT_PALETTE = concatStringsSep "," cfg.palette;
-            };
+            home.packages = [
+                (
+                    if cfg.palette == null
+                    then cfg.package
+                    else cfg.package.override {inherit (cfg) palette;}
+                )
+            ];
         };
     };
 }
